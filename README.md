@@ -1,109 +1,300 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# ORB 🍊 - Orange Recipe Book
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+A smart recipe discovery and management application that helps you cook with what you have at home.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## Vision
 
-## Features
+ORB is a modern recipe discovery platform that bridges the gap between your available ingredients and delicious meals. Instead of scrolling through endless recipes you can't make, ORB shows you exactly what you can cook with what's in your pantry, fridge, and freezer.
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## Core Features
 
-## Demo
+### Phase 1: MVP (Weeks 1-4)
+- **Ingredient Management**: Input and manage your available ingredients
+- **Recipe Discovery**: Browse recipes based on available ingredients
+- **Smart Filtering**: Filter recipes by ingredients you have/need
+- **Recipe Details**: View complete recipe information with ingredient availability status
+- **Recipe Saving**: Save favorite recipes to a personal recipe book
+- **Missing Ingredients List**: Generate shopping lists for recipes you want to cook
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+### Phase 2: Enhanced (Weeks 5-8)
+- **Recipe Suggestions**: AI-powered suggestions based on your ingredients
+- **Shopping Integration**: Connect with Mathom or other shopping apps
+- **Notes Export**: Export missing ingredients to Notes, Notion, or other apps
+- **Advanced Filtering**: Filter by cuisine, difficulty, cooking time, dietary restrictions
+- **Recipe Collections**: Organize recipes into custom collections
 
-## Deploy to Vercel
+### Phase 3: Social & Analytics (Future)
+- **Community Recipes**: Share custom recipes with other users
+- **Cooking History**: Track what you've cooked
+- **Analytics**: Ingredient usage patterns and recommendations
+- **Social Features**: Follow friends, share meal plans
 
-Vercel deployment will guide you through creating a Supabase account and project.
+## Tech Stack
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+### Frontend
+- **Framework**: Next.js 15+ (App Router)
+- **UI Library**: shadcn/ui + Radix UI
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Theme**: next-themes (Light/Dark mode)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### Backend & Database
+- **Backend**: Next.js API Routes & Server Actions
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth (Email/Password)
+- **Real-time**: Supabase Real-time (if needed for future features)
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### External APIs
+- **Recipe Database**: Spoonacular API or similar
+- **Shopping Apps**: Mathom API (to be integrated)
+- **Note Apps**: Notion API (optional)
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### Deployment
+- **Hosting**: Vercel
+- **CI/CD**: GitHub Actions
 
-## Clone and run locally
+## Project Structure
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+```
+orb/
+├── app/                           # Next.js app directory
+│   ├── (auth)/                    # Authentication routes
+│   │   ├── login/
+│   │   ├── signup/
+│   │   └── logout/
+│   ├── (dashboard)/               # Protected dashboard routes
+│   │   ├── layout.tsx
+│   │   ├── page.tsx               # Home/Dashboard
+│   │   ├── recipes/
+│   │   │   ├── page.tsx           # Recipe browser
+│   │   │   └── [id]/              # Recipe details
+│   │   ├── my-recipes/            # Saved recipes
+│   │   ├── ingredients/           # Ingredient management
+│   │   ├── shopping-list/
+│   │   └── settings/
+│   ├── api/                       # API routes
+│   │   ├── recipes/
+│   │   ├── ingredients/
+│   │   ├── user/
+│   │   └── shopping-list/
+│   └── layout.tsx                 # Root layout
+│
+├── components/                    # Reusable React components
+│   ├── auth/                      # Authentication components
+│   ├── recipes/                   # Recipe-related components
+│   ├── ingredients/               # Ingredient components
+│   ├── ui/                        # shadcn/ui components
+│   ├── layout/                    # Layout components (Header, Sidebar, etc.)
+│   └── common/                    # Common utilities (Buttons, modals, etc.)
+│
+├── lib/                           # Utility functions
+│   ├── supabase/                  # Supabase client & helpers
+│   ├── api-clients/               # External API clients
+│   ├── types.ts                   # TypeScript interfaces
+│   ├── constants.ts               # App constants
+│   └── utils.ts                   # Helper functions
+│
+├── hooks/                         # Custom React hooks
+│   ├── useAuth.ts
+│   ├── useRecipes.ts
+│   ├── useIngredients.ts
+│   └── useShoppingList.ts
+│
+├── public/                        # Static assets
+│   ├── images/
+│   └── icons/
+│
+├── styles/                        # Global styles
+│   └── globals.css
+│
+├── docs/                          # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── API_DOCUMENTATION.md
+│   ├── WIREFRAMES.md
+│   ├── IMPLEMENTATION_PHASES.md
+│   └── DEPLOYMENT_GUIDE.md
+│
+├── .env.local.example             # Environment variables template
+├── tsconfig.json
+├── tailwind.config.ts
+├── next.config.ts
+└── package.json
+```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+## Database Schema (Supabase PostgreSQL)
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+### Tables Overview
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+**users**
+- id (UUID, PK)
+- email (text, unique)
+- full_name (text)
+- created_at (timestamp)
+- updated_at (timestamp)
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+**ingredients**
+- id (UUID, PK)
+- user_id (UUID, FK -> users)
+- name (text)
+- quantity (decimal)
+- unit (text: "g", "ml", "cup", "tbsp", etc.)
+- category (text: "pantry", "fridge", "freezer")
+- expires_at (timestamp, nullable)
+- created_at (timestamp)
 
-3. Use `cd` to change into the app's directory
+**recipes** (from external API or user-created)
+- id (UUID, PK)
+- external_id (text, for API recipes)
+- title (text)
+- description (text)
+- image_url (text)
+- source (text: "spoonacular", "user", etc.)
+- difficulty (text: "easy", "medium", "hard")
+- cooking_time (integer, minutes)
+- servings (integer)
+- instructions (text)
+- created_at (timestamp)
 
-   ```bash
-   cd with-supabase-app
-   ```
+**recipe_ingredients** (junction table)
+- id (UUID, PK)
+- recipe_id (UUID, FK -> recipes)
+- ingredient_name (text)
+- quantity (decimal)
+- unit (text)
+- is_optional (boolean)
 
-4. Rename `.env.example` to `.env.local` and update the following:
+**saved_recipes** (user's recipe book)
+- id (UUID, PK)
+- user_id (UUID, FK -> users)
+- recipe_id (UUID, FK -> recipes)
+- collection_id (UUID, FK -> collections, nullable)
+- notes (text)
+- saved_at (timestamp)
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+**collections** (recipe collections/folders)
+- id (UUID, PK)
+- user_id (UUID, FK -> users)
+- name (text)
+- description (text)
+- color (text, hex code)
+- created_at (timestamp)
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+**shopping_lists** (exported shopping lists)
+- id (UUID, PK)
+- user_id (UUID, FK -> users)
+- recipe_id (UUID, FK -> recipes)
+- items (jsonb: [{ingredient, quantity, unit, bought}])
+- exported_to (text: "notes", "notion", "mathom")
+- created_at (timestamp)
 
-5. You can now run the Next.js local development server:
+## Getting Started
 
-   ```bash
-   npm run dev
-   ```
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- A Supabase project
+- Environment variables configured
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+### Installation
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd orb
+```
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+2. Install dependencies
+```bash
+npm install
+```
 
-## Feedback and issues
+3. Set up environment variables
+```bash
+cp .env.local.example .env.local
+```
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+4. Configure your `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_RECIPE_API_KEY=your_recipe_api_key (optional)
+```
 
-## More Supabase examples
+5. Run database migrations
+```bash
+npm run db:migrate
+```
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+6. Start development server
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000`
+
+## Development Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm start            # Start production server
+npm run lint         # Run Biome linter
+npm run format       # Run Biome formatter
+npm run db:migrate   # Run database migrations
+npm run db:reset     # Reset database (dev only)
+```
+
+## Implementation Phases
+
+See [IMPLEMENTATION_PHASES.md](./docs/IMPLEMENTATION_PHASES.md) for detailed week-by-week breakdown.
+
+## Architecture
+
+See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed technical architecture.
+
+## Wireframes & Design
+
+See [WIREFRAMES.md](./docs/WIREFRAMES.md) for UI/UX mockups.
+
+## Database Schema Details
+
+See [DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) for comprehensive schema documentation.
+
+## API Documentation
+
+See [API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for API endpoint specifications.
+
+## Deployment
+
+See [DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) for deployment instructions.
+
+## Contributing
+
+1. Create a feature branch
+2. Commit changes with descriptive messages
+3. Push to the branch
+4. Create a Pull Request
+
+## Future Enhancements
+
+- [ ] Mobile app (React Native)
+- [ ] Barcode scanner for ingredient input
+- [ ] AI-powered meal planning
+- [ ] Nutrition information display
+- [ ] Community recipe sharing
+- [ ] Video recipe instructions
+- [ ] Multi-language support
+- [ ] Offline mode
+
+## License
+
+MIT
+
+## Support
+
+For issues and feature requests, please use the GitHub Issues page.
+
+---
+
+**Made with 🍊 for home cooks everywhere**
