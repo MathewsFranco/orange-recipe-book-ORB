@@ -18,15 +18,27 @@ Comprehensive technical architecture documentation for the Orange Recipe Book ap
 
 ## System Overview
 
-ORB is a modern, full-stack web application built with Next.js that helps users discover recipes based on ingredients they have at home. The architecture follows a client-server model with clear separation of concerns.
+ORB is a modern, full-stack web application built with Next.js that helps users discover recipes based on what they have at home. The core UX is a **public-first search experience**: anyone can land on the home page, type a recipe name or ingredient, and immediately see results — no account required. Auth-gated features (saving recipes, ingredient inventory, match percentages) are surfaced inline with a login nudge rather than a hard redirect.
 
 ### Key Principles
 
+- **Public-first**: The search and recipe browsing experience works without auth. Auth unlocks personalization.
+- **Progressive auth**: Auth-only actions (save, match check) show an inline "Log in to unlock" prompt — never a hard redirect from a public page.
 - **Modularity**: Components, hooks, and utilities are independently testable
 - **Scalability**: Database design supports growth without major refactoring
 - **Performance**: Caching, lazy loading, and optimized queries
 - **Security**: Row-level security, authentication, and input validation
 - **User Experience**: Real-time feedback, smooth transitions, responsive design
+
+### Route Access Model
+
+| Route | Auth Required | Notes |
+|-------|--------------|-------|
+| `/` | No | Search-first home page. Works for all visitors. |
+| `/recipes/[id]` | No | Full recipe detail. Auth-gated actions show login nudge. |
+| `/protected/ingredients` | Yes | Personal pantry inventory. |
+| `/protected/saved` | Yes | Saved recipes. |
+| `/auth/login` | No | Google OAuth sign-in. |
 
 ## Technology Stack
 
@@ -246,48 +258,45 @@ Middleware validates session
 Access granted to protected routes
 ```
 
-### Recipe Discovery Flow
+### Recipe Discovery Flow (Public)
 
 ```
-User logs in
+Visitor lands on home page (no auth needed)
        ↓
-[Dashboard] - Show suggestions
+[Home Page — centered search input]
        ↓
-User enters/selects ingredients
+User types recipe name OR ingredient name
        ↓
-[Inventory Management]
+[Live search → query local Supabase recipes table]
        ↓
-Ingredients saved to database
+Results shown as recipe cards
        ↓
-User navigates to Recipe Browser
+User clicks a recipe card
        ↓
-[Recipe Search Component]
+[Recipe Detail Page — public]
        ↓
-Query sent to API Route
+Full recipe shown: image, ingredients, instructions
        ↓
-[Server Action / API Handler]
+Auth-gated actions shown with login nudge:
+  - "Save recipe" → tooltip: "Log in to save"
+  - "Check what I have" → tooltip: "Log in to match with your pantry"
+  - "Missing ingredients" → tooltip: "Log in to see your gap"
+```
+
+### Recipe Discovery Flow (Logged-in)
+
+```
+Logged-in user searches on home page
        ↓
-Ingredients retrieved from DB
-       ↓
-Recipe search executed (via Recipe API)
-       ↓
-Matching algorithm calculates availability
-       ↓
-Results ranked by availability
-       ↓
-[JSON Response]
-       ↓
-Component renders recipe list
+Results shown with ingredient match % badge
+  (calculated from user's pantry vs recipe ingredients)
        ↓
 User clicks recipe
        ↓
 [Recipe Detail Page]
        ↓
-Full recipe loaded with:
-  - All ingredients
-  - Availability status for each ingredient
-  - Missing ingredients highlighted
-  - Option to save or export to shopping list
+Each ingredient shown: ✅ have it / ❌ missing
+Save button active, no nudge needed
 ```
 
 ### Shopping List Generation Flow
@@ -706,26 +715,27 @@ CREATE POLICY "Recipes are publicly readable"
 ### Authentication Flow
 
 ```
-1. User signs up with email/password
+1. User clicks "Continue with Google"
    ↓
-2. Supabase Auth creates user account
+2. Supabase Auth redirects to Google OAuth
    ↓
-3. JWT token generated
+3. Google authenticates user
    ↓
-4. Token stored in secure HTTP-only cookie (via supabase-ssr)
+4. Redirect back to /auth/confirm
    ↓
-5. Middleware validates token on each request
+5. JWT token generated, stored in HTTP-only cookie
    ↓
-6. Valid token → Allow access
-   Invalid/expired → Redirect to login
+6. DB trigger creates public.users row (first login only)
    ↓
-7. Token refresh on background (before expiry)
+7. Redirect to home page (now with personalized match %)
 ```
+
+**No email/password auth.** All existing email/password pages have been removed. Google OAuth is the only sign-in method.
 
 ### Security Measures
 
 1. **Authentication**
-   - Email/password with Supabase Auth
+   - Google OAuth via Supabase Auth (no passwords stored)
    - JWT tokens with 1-hour expiry
    - Refresh tokens for long-lived sessions
    - Secure HTTP-only cookies

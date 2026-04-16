@@ -38,44 +38,36 @@ UI/UX design specifications and wireframes for the Orange Recipe Book applicatio
 
 ---
 
-## Color Palette
+## Color Palette — "Saffron & Slate"
 
-### Primary Colors
+> Updated April 2026. Replaces the original orange/blue palette.
 
-- **Orange (Primary)**: `#FF8C42` - Main brand color
-  - Light: `#FFB380`
-  - Dark: `#E67E3C`
-- **Blue (Secondary)**: `#3B82F6` - Actions and highlights
-- **White**: `#FFFFFF` - Background
-- **Neutral Gray**: `#F3F4F6` - Secondary background
+| Role | Light Mode | Dark Mode |
+|------|-----------|-----------|
+| **Primary** | `#D35400` (burnt orange) | `#D35400` |
+| **Secondary** | `#382924` (dark brown) | `#382924` |
+| **Background** | `#F7EADC` (warm cream) | `#1E1E1E` (near-black) |
+| **Foreground** | `#1E1E1E` | `#F7EADC` |
+| **Muted bg** | `#e8d9c8` | `#2a1f1b` |
+| **Muted text** | `#382924` | `#c4a98a` |
 
 ### Semantic Colors
 
-- **Success**: `#10B981` - Positive actions, ingredient found
-- **Warning**: `#F59E0B` - Missing ingredients, expiring soon
-- **Error**: `#EF4444` - Errors, critical issues
-- **Info**: `#06B6D4` - Information, tips
-
-### Text Colors
-
-- **Primary Text**: `#1F2937` (light mode) / `#F3F4F6` (dark mode)
-- **Secondary Text**: `#6B7280` (light mode) / `#D1D5DB` (dark mode)
-- **Muted Text**: `#9CA3AF` (light mode) / `#4B5563` (dark mode)
-
-### Dark Mode
-
-- **Background**: `#0F172A`
-- **Surface**: `#1E293B`
-- **Border**: `#334155`
+- **Success** (ingredient available): `#10B981`
+- **Warning** (expiring soon / partial match): `#F59E0B`
+- **Error** (missing ingredient / error): `#EF4444`
 
 ---
 
 ## Typography
 
+> Updated April 2026. Replaces Inter with Bebas Neue + Nunito.
+
 ### Font Family
 
-- **Primary**: `Inter` (sans-serif) - System default fallback: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto`
-- **Mono**: `Fira Code` or `Monaco` - For ingredient amounts, measurements
+- **Headings**: `Bebas Neue` (400 weight) — display, section headers, recipe titles
+- **Body**: `Nunito` (400/600 weight) — all body text, labels, UI copy
+- **Mono**: `Fira Code` — ingredient amounts, measurements (optional)
 
 ### Type Scale
 
@@ -328,40 +320,63 @@ Bottom Navigation (Mobile)
 
 ---
 
-### 2. Dashboard Page
+### 2. Home Page (Public — Search First)
+
+> Updated April 2026. The home page is now the primary discovery surface, accessible without auth.
+> There is no separate dashboard. The search page IS the entry point for all users.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ ORB 🍊  Home  Recipes  My Recipes  Settings        User ▼    │
+│ ORB           [My Ingredients]  [Saved]      [Log in] ▼      │
+│  (logo Bebas)  (nudge if anon)  (nudge)      (or avatar)     │
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Welcome back, [User]!                                       │
 │                                                              │
-│  ┌────────────────────────────┐  ┌────────────────────────┐ │
-│  │ Quick Stats                │  │ Your Recent Activity   │ │
-│  ├────────────────────────────┤  ├────────────────────────┤ │
-│  │ Ingredients: 24            │  │ • Saved Pasta Carbonara│ │
-│  │ Recipes Saved: 12          │  │ • Added 3 ingredients  │ │
-│  │ Can Cook: 8                │  │ • Created collection   │ │
-│  └────────────────────────────┘  └────────────────────────┘ │
+│                    ORB                                       │
+│            (large Bebas Neue heading)                        │
 │                                                              │
-│  Suggestions for You                                         │
+│         What do you want to cook?                           │
+│         or: What's in your fridge?                          │
+│                                                              │
+│   ┌──────────────────────────────────────────────────────┐  │
+│   │  🔍  "pasta" or "chicken, garlic, tomatoes..."       │  │
+│   └──────────────────────────────────────────────────────┘  │
+│                                                              │
+│                                                              │
+│  ─────────────────── Results ────────────────────           │
+│                                                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │  [Image]     │  │  [Image]     │  │  [Image]     │      │
 │  │              │  │              │  │              │      │
 │  │ Pasta        │  │ Stir Fry     │  │ Salad        │      │
-│  │ 100% match   │  │ 95% match    │  │ 80% match    │      │
-│  │ [Save]       │  │ [Save]       │  │ [Save]       │      │
+│  │ Carbonara    │  │              │  │              │      │
+│  │              │  │              │  │              │      │
+│  │ ⏱ 20 min    │  │ ⏱ 15 min    │  │ ⏱ 10 min    │      │
+│  │ 🎯 Easy     │  │ 🎯 Easy     │  │ 🎯 Very Easy │      │
+│  │              │  │              │  │              │      │
+│  │ [🤍 Save]   │  │ [🤍 Save]   │  │ [🤍 Save]   │      │
+│  │ (anon nudge) │  │ (anon nudge) │  │ (anon nudge) │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 │                                                              │
-│  Your Collections                                            │
-│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐│
-│  │ 🍳 Breakfast   │  │ 🍰 Desserts    │  │ 🥗 Healthy    ││
-│  │ 5 recipes      │  │ 8 recipes      │  │ 12 recipes    ││
-│  └────────────────┘  └────────────────┘  └────────────────┘│
+│  Logged-in variant: cards show match % badge                 │
+│  ┌──────────────┐                                           │
+│  │  [Image]     │                                           │
+│  │ Carbonara    │  ← ✅ 100% match  (green badge)           │
+│  │ [❤️ Save]   │  ← button active, no nudge               │
+│  └──────────────┘                                           │
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+**Auth nudge behavior** (anonymous user clicks "Save"):
+```
+┌─────────────────────────────┐
+│  Log in to save recipes     │
+│  [Continue with Google]     │
+│  [Maybe later]              │
+└─────────────────────────────┘
+```
+Displayed as a small popover/tooltip — not a page redirect.
 
 ---
 

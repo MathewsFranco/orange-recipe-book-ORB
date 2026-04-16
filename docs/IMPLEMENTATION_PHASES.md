@@ -4,9 +4,13 @@ A comprehensive week-by-week breakdown of the ORB project development timeline.
 
 ## Overview
 
-The ORB project is divided into 5 main phases, each lasting 2-4 weeks. This document outlines deliverables, tasks, and success criteria for each phase.
+> Last updated: April 2026. Reflects decisions made in planning session: Google OAuth only, public-first search home page, Spoonacular → Supabase caching strategy, Saffron & Slate palette, Bebas Neue + Nunito fonts.
 
-**Total Timeline**: ~16 weeks to production-ready MVP
+The ORB project is divided into phases. This document outlines deliverables and tasks per phase.
+
+**Core UX shift from original plan**: The home page is now a **public search-first experience** — no auth required. Users discover recipes by typing a name or ingredient. Auth-gated features (save, pantry matching) are surfaced inline with login nudges, not hard redirects.
+
+**Auth**: Google OAuth only. Email/password removed entirely.
 
 ---
 
