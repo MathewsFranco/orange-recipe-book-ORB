@@ -10,7 +10,18 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-bebas-neue)", "sans-serif"],
+        body: ["var(--font-nunito)", "sans-serif"],
+        sans: ["var(--font-nunito)", "sans-serif"],
+      },
       colors: {
+        brand: {
+          primary: "#D35400",
+          secondary: "#382924",
+          cream: "#F7EADC",
+          dark: "#1E1E1E",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
