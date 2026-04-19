@@ -6,14 +6,18 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 0. WIPE existing public schema objects (safe reset)
 -- ─────────────────────────────────────────────────────────────────────────────
+-- WARNING: DESTROYS ALL DATA IN LISTED TABLES.
+-- Only run this on a fresh/dev environment.
+-- Comment out the block below to skip the wipe.
 
-DROP TABLE IF EXISTS public.saved_recipes    CASCADE;
-DROP TABLE IF EXISTS public.ingredients       CASCADE;
+DROP TABLE IF EXISTS public.saved_recipes     CASCADE;
+DROP TABLE IF EXISTS public.ingredients        CASCADE;
 DROP TABLE IF EXISTS public.recipe_ingredients CASCADE;
-DROP TABLE IF EXISTS public.recipes           CASCADE;
-DROP TABLE IF EXISTS public.users             CASCADE;
+DROP TABLE IF EXISTS public.recipes            CASCADE;
+DROP TABLE IF EXISTS public.users              CASCADE;
 
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user()  CASCADE;
+DROP FUNCTION IF EXISTS public.set_updated_at()   CASCADE;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 1. TABLES
@@ -21,30 +25,35 @@ DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 
 -- 1a. users — mirrors auth.users, auto-populated by trigger
 CREATE TABLE public.users (
-  id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email      TEXT UNIQUE NOT NULL,
-  full_name  TEXT,
-  avatar_url TEXT,
-  bio        TEXT,
+  id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email       TEXT UNIQUE NOT NULL,
+  full_name   TEXT,
+  avatar_url  TEXT,
+  bio         TEXT,
   preferences JSONB DEFAULT '{}' CHECK (jsonb_typeof(preferences) = 'object'),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 1b. recipes — public, read-only for anon
+-- 1b. recipes — public, read-only for anon; all writes via service role
+--     source 'user' removed: user-created recipes not supported in Phase 0
 CREATE TABLE public.recipes (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   external_id  TEXT UNIQUE,
   title        TEXT NOT NULL,
   description  TEXT,
   image_url    TEXT,
-  source       TEXT DEFAULT 'manual' CHECK (source IN ('spoonacular', 'edamam', 'manual', 'user')),
+  source       TEXT DEFAULT 'manual' CHECK (source IN ('spoonacular', 'edamam', 'manual')),
   difficulty   TEXT DEFAULT 'medium'  CHECK (difficulty IN ('easy', 'medium', 'hard')),
   cooking_time INTEGER,
   prep_time    INTEGER,
   servings     INTEGER DEFAULT 4,
   cuisine      TEXT,
   instructions TEXT NOT NULL,
+  -- generated tsvector for reliable FTS (avoids expression-index client mismatch)
+  search_tsv   tsvector GENERATED ALWAYS AS (
+    to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, ''))
+  ) STORED,
   created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -79,17 +88,17 @@ CREATE TABLE public.ingredients (
   expires_at TIMESTAMP WITH TIME ZONE,
   notes      TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, name)
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  -- case-insensitive uniqueness enforced by functional index below
 );
 
 -- 1e. saved_recipes — owner-only
---     collection_id column present but FK deferred until collections table exists (Phase 3)
+--     collection_id FK deferred until collections table exists (Phase 3)
 CREATE TABLE public.saved_recipes (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   recipe_id     UUID NOT NULL REFERENCES public.recipes(id) ON DELETE CASCADE,
-  collection_id UUID,                 -- FK added in Phase 3 when collections table exists
+  collection_id UUID,
   notes         TEXT,
   is_favorite   BOOLEAN DEFAULT FALSE,
   saved_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -106,34 +115,34 @@ CREATE UNIQUE INDEX idx_users_email      ON public.users(email);
 CREATE        INDEX idx_users_created_at ON public.users(created_at);
 
 -- recipes
-CREATE UNIQUE INDEX idx_recipes_external_id      ON public.recipes(external_id) WHERE external_id IS NOT NULL;
-CREATE        INDEX idx_recipes_title            ON public.recipes(title);
-CREATE        INDEX idx_recipes_cuisine          ON public.recipes(cuisine);
-CREATE        INDEX idx_recipes_difficulty       ON public.recipes(difficulty);
-CREATE        INDEX idx_recipes_title_fts        ON public.recipes USING gin(to_tsvector('english', title));
-CREATE        INDEX idx_recipes_description_fts  ON public.recipes USING gin(to_tsvector('english', COALESCE(description, '')));
+CREATE UNIQUE INDEX idx_recipes_external_id  ON public.recipes(external_id) WHERE external_id IS NOT NULL;
+CREATE        INDEX idx_recipes_title        ON public.recipes(title);
+CREATE        INDEX idx_recipes_cuisine      ON public.recipes(cuisine);
+CREATE        INDEX idx_recipes_difficulty   ON public.recipes(difficulty);
+CREATE        INDEX idx_recipes_search_tsv   ON public.recipes USING gin(search_tsv);
 
 -- recipe_ingredients
 CREATE INDEX idx_recipe_ingredients_recipe_id       ON public.recipe_ingredients(recipe_id);
 CREATE INDEX idx_recipe_ingredients_ingredient_name ON public.recipe_ingredients(ingredient_name);
 
--- ingredients
-CREATE INDEX idx_ingredients_user_id       ON public.ingredients(user_id);
-CREATE INDEX idx_ingredients_name          ON public.ingredients(name);
-CREATE INDEX idx_ingredients_expires_at    ON public.ingredients(expires_at);
-CREATE INDEX idx_ingredients_user_category ON public.ingredients(user_id, category);
+-- ingredients — case-insensitive unique constraint + standard indexes
+CREATE UNIQUE INDEX idx_ingredients_user_name_lower ON public.ingredients (user_id, lower(name));
+CREATE        INDEX idx_ingredients_user_id         ON public.ingredients(user_id);
+CREATE        INDEX idx_ingredients_expires_at      ON public.ingredients(expires_at);
+CREATE        INDEX idx_ingredients_user_category   ON public.ingredients(user_id, category);
 
 -- saved_recipes
-CREATE INDEX idx_saved_recipes_user_id       ON public.saved_recipes(user_id);
-CREATE INDEX idx_saved_recipes_recipe_id     ON public.saved_recipes(recipe_id);
-CREATE INDEX idx_saved_recipes_user_favorite ON public.saved_recipes(user_id, is_favorite);
+CREATE INDEX idx_saved_recipes_user_id        ON public.saved_recipes(user_id);
+CREATE INDEX idx_saved_recipes_recipe_id      ON public.saved_recipes(recipe_id);
+CREATE INDEX idx_saved_recipes_user_favorite  ON public.saved_recipes(user_id, is_favorite);
+CREATE INDEX idx_saved_recipes_collection_id  ON public.saved_recipes(collection_id) WHERE collection_id IS NOT NULL;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 3. ROW LEVEL SECURITY
 -- ─────────────────────────────────────────────────────────────────────────────
 
-ALTER TABLE public.users             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.recipes           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipes            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recipe_ingredients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ingredients        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.saved_recipes      ENABLE ROW LEVEL SECURITY;
@@ -205,9 +214,37 @@ CREATE POLICY "saved_recipes: owner delete"
   USING (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 4. TRIGGER — auto-create public.users on Google OAuth signup
+-- 4. TRIGGERS
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- 4a. updated_at auto-refresh
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_users_updated_at
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_recipes_updated_at
+  BEFORE UPDATE ON public.recipes
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_ingredients_updated_at
+  BEFORE UPDATE ON public.ingredients
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_saved_recipes_updated_at
+  BEFORE UPDATE ON public.saved_recipes
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- 4b. Auto-create public.users row on Google OAuth signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -215,6 +252,11 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  -- Skip non-email signups (phone-only, anonymous) to avoid NOT NULL violation
+  IF NEW.email IS NULL THEN
+    RETURN NEW;
+  END IF;
+
   INSERT INTO public.users (id, email, full_name, avatar_url)
   VALUES (
     NEW.id,
@@ -250,7 +292,17 @@ WHERE relnamespace = 'public'::regnamespace
   AND relname IN ('users', 'ingredients', 'recipes', 'recipe_ingredients', 'saved_recipes')
 ORDER BY relname;
 
--- Verify trigger exists
-SELECT trigger_name, event_object_table
+-- Verify RLS policies exist per table (RLS enabled with 0 policies locks everyone out)
+SELECT tablename, count(*) AS policy_count
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename IN ('users', 'ingredients', 'recipes', 'recipe_ingredients', 'saved_recipes')
+GROUP BY tablename
+ORDER BY tablename;
+
+-- Verify trigger exists on auth.users
+SELECT trigger_name, event_object_schema, event_object_table, action_timing, event_manipulation
 FROM information_schema.triggers
-WHERE trigger_name = 'on_auth_user_created';
+WHERE trigger_name = 'on_auth_user_created'
+  AND event_object_schema = 'auth'
+  AND event_object_table = 'users';
