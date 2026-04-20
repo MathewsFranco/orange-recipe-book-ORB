@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -40,6 +42,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Suspense>
+            <SiteHeader />
+          </Suspense>
           {children}
         </ThemeProvider>
       </body>
