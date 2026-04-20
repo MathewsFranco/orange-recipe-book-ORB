@@ -1,10 +1,11 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { hasEnvVars } from "@/lib/utils"
 import type { RecipeSearchResult } from "@/lib/types"
 
 export async function searchRecipes(query: string): Promise<RecipeSearchResult[]> {
-  if (!query.trim()) return []
+  if (!query.trim() || !hasEnvVars) return []
 
   const supabase = await createClient()
   const term = query.trim()
