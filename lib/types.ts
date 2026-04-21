@@ -24,6 +24,19 @@ export interface Recipe {
   ingredients: RecipeIngredient[]
 }
 
+export interface RecipeSearchResult {
+  id: string
+  title: string
+  image_url: string | null
+  cuisine: string | null
+  cooking_time: number | null
+}
+
+export interface SearchSuggestion {
+  type: "recipe" | "ingredient"
+  label: string
+}
+
 export interface RecipeWithMatch extends Recipe {
   match_percentage: number
   matched: RecipeIngredient[]
