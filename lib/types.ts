@@ -6,6 +6,33 @@ export interface Ingredient {
   category?: string
 }
 
+export type IngredientUnit =
+  | "g" | "kg" | "mg" | "ml" | "l" | "cup" | "tbsp" | "tsp"
+  | "oz" | "lb" | "pt" | "qt" | "unit" | "pinch" | "handful"
+
+export type IngredientCategory = "pantry" | "fridge" | "freezer" | "other"
+
+export interface PantryIngredient {
+  id: string
+  user_id: string
+  name: string
+  quantity: number
+  unit: IngredientUnit
+  category: IngredientCategory
+  expires_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface IngredientInput {
+  name: string
+  quantity: number
+  unit: IngredientUnit
+  category: IngredientCategory
+  expires_at?: string | null
+}
+
 export interface RecipeIngredient {
   id?: string
   recipe_id?: string
