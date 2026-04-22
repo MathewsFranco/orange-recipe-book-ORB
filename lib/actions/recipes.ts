@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import type { RecipeSearchResult, SearchSuggestion } from "@/lib/types"
+import type { RecipeDetail, RecipeSearchResult, SearchSuggestion } from "@/lib/types"
 
 const MIN_QUERY_LENGTH = 2
 const SEARCH_LIMIT = 50
@@ -87,4 +87,24 @@ export async function getSuggestions(query: string): Promise<SearchSuggestion[]>
   }
 
   return [...recipeSuggestions, ...ingredientSuggestions]
+}
+
+export async function getRecipeById(id: string): Promise<RecipeDetail | null> {
+  const supabase = await createClient()
+
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("id, title, description, image_url, cuisine, difficulty, cooking_time, prep_time, servings, instructions")
+    .eq("id", id)
+    .single()
+
+  if (!recipe) return null
+
+  const { data: ingredients } = await supabase
+    .from("recipe_ingredients")
+    .select("id, recipe_id, ingredient_name, quantity, unit, is_optional, notes")
+    .eq("recipe_id", id)
+    .order("ingredient_name")
+
+  return { ...recipe, ingredients: ingredients ?? [] }
 }
