@@ -92,19 +92,22 @@ export async function getSuggestions(query: string): Promise<SearchSuggestion[]>
 export async function getRecipeById(id: string): Promise<RecipeDetail | null> {
   const supabase = await createClient()
 
-  const { data: recipe } = await supabase
+  const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
     .select("id, title, description, image_url, cuisine, difficulty, cooking_time, prep_time, servings, instructions")
     .eq("id", id)
-    .single()
+    .maybeSingle()
 
+  if (recipeError) throw recipeError
   if (!recipe) return null
 
-  const { data: ingredients } = await supabase
+  const { data: ingredients, error: ingredientsError } = await supabase
     .from("recipe_ingredients")
     .select("id, recipe_id, ingredient_name, quantity, unit, is_optional, notes")
     .eq("recipe_id", id)
     .order("ingredient_name")
+
+  if (ingredientsError) throw ingredientsError
 
   return { ...recipe, ingredients: ingredients ?? [] }
 }
