@@ -79,6 +79,7 @@ export function AddIngredientDialog({ defaultCategory }: Props) {
         setForm({ ...DEFAULT_FORM, category: defaultCategory ?? "pantry" })
         setErrors({})
       },
+      onError: (e) => setErrors({ form: e.message }),
     })
   }
 
@@ -187,6 +188,10 @@ export function AddIngredientDialog({ defaultCategory }: Props) {
               }
             />
           </div>
+
+          {errors.form && (
+            <p className="text-destructive text-xs">{errors.form}</p>
+          )}
 
           <DialogFooter>
             <Button

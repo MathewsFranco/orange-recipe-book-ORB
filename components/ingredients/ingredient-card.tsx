@@ -75,10 +75,10 @@ export function IngredientCard({ item }: Props) {
     const trimmedName = name.trim()
     const qty = parseFloat(quantity)
     if (!trimmedName) { setError("Name required"); return }
-    if (!qty || qty <= 0) { setError("Quantity must be > 0"); return }
+    if (isNaN(qty) || qty <= 0) { setError("Quantity must be > 0"); return }
     update(
       { id: item.id, input: { name: trimmedName, quantity: qty, unit } },
-      { onSuccess: () => setEditing(false) },
+      { onSuccess: () => setEditing(false), onError: (e) => setError(e.message) },
     )
   }
 

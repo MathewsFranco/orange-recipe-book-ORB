@@ -1,6 +1,4 @@
 import { Suspense } from "react"
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
 import { getIngredients } from "@/lib/actions/ingredients"
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
 import { IngredientList } from "@/components/ingredients/ingredient-list"
@@ -9,10 +7,6 @@ import { AddIngredientDialog } from "@/components/ingredients/add-ingredient-dia
 export const metadata = { title: "My Pantry — ORB" }
 
 async function PantryContent() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.getClaims()
-  if (error || !data?.claims) redirect("/auth/login")
-
   const qc = new QueryClient()
   await qc.prefetchQuery({ queryKey: ["ingredients"], queryFn: getIngredients })
 
