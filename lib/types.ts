@@ -69,3 +69,17 @@ export interface RecipeWithMatch extends Recipe {
   matched: RecipeIngredient[]
   missing: RecipeIngredient[]
 }
+
+export interface RecipeDetail {
+  id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  cuisine: string | null
+  difficulty: string | null
+  cooking_time: number | null
+  prep_time: number | null
+  servings: number | null
+  instructions: string | null
+  ingredients: RecipeIngredient[]
+}
