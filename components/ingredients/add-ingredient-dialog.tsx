@@ -125,9 +125,10 @@ export function AddIngredientDialog({ defaultCategory }: Props) {
                 min={0.01}
                 step="any"
                 value={form.quantity}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))
-                }
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  setForm((f) => ({ ...f, quantity: isNaN(val) ? f.quantity : val }))
+                }}
                 aria-invalid={!!errors.quantity}
               />
               {errors.quantity && (

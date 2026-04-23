@@ -33,8 +33,10 @@ const UNITS: IngredientUnit[] = [
 
 function formatExpiry(iso: string | null): string | null {
   if (!iso) return null
-  const d = new Date(iso)
+  const [y, m, day] = iso.split("-").map(Number)
+  const d = new Date(y, m - 1, day)
   const now = new Date()
+  now.setHours(0, 0, 0, 0)
   const diff = Math.ceil((d.getTime() - now.getTime()) / 86_400_000)
   if (diff < 0) return "Expired"
   if (diff === 0) return "Expires today"
