@@ -1,18 +1,27 @@
+import Link from "next/link"
 import Image from "next/image"
-import { Clock, ChefHat, Users, Timer, Bookmark, FlaskConical } from "lucide-react"
+import { Clock, ChefHat, Users, Timer, FlaskConical, CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AuthNudge } from "@/components/auth-nudge"
+import { SaveButton } from "@/components/recipes/save-button"
 import { cn } from "@/lib/utils"
-import type { RecipeDetail } from "@/lib/types"
+import type { MatchResult, RecipeDetail, RecipeIngredient } from "@/lib/types"
 
 interface RecipeDetailProps {
   recipe: RecipeDetail
   isLoggedIn: boolean
+  matchResult?: MatchResult
+  isSaved?: boolean
 }
 
-export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
+export function RecipeDetailView({ recipe, isLoggedIn, matchResult, isSaved = false }: RecipeDetailProps) {
   const instructions = parseInstructions(recipe.instructions)
+
+  const requiredCount = recipe.ingredients.filter((i) => !i.is_optional).length
+  const matchedNames = matchResult
+    ? new Set(matchResult.matched.map((i) => i.ingredient_name.trim().toLowerCase()))
+    : null
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-8 space-y-8">
@@ -64,20 +73,51 @@ export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
         )}
       </div>
 
+      {/* Match summary band */}
+      {matchResult && (
+        <div className={cn(
+          "rounded-xl px-5 py-3 text-sm font-medium flex items-center gap-2",
+          matchResult.match_percentage >= 80
+            ? "bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            : matchResult.match_percentage >= 40
+            ? "bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+            : "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+        )}>
+          <span className="text-base font-bold">{matchResult.match_percentage}%</span>
+          <span>
+            You have {matchResult.matched.length} of {requiredCount} ingredient{requiredCount !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="flex gap-3">
-        <AuthNudge message="Sign in to save recipes for later." isLoggedIn={isLoggedIn}>
-          <Button variant="default" className="gap-2">
-            <Bookmark className="size-4" />
-            Save recipe
-          </Button>
-        </AuthNudge>
-        <AuthNudge message="Sign in to check which ingredients you already have." isLoggedIn={isLoggedIn}>
-          <Button variant="outline" className="gap-2">
-            <FlaskConical className="size-4" />
-            Check what I have
-          </Button>
-        </AuthNudge>
+        {isLoggedIn ? (
+          <>
+            <SaveButton recipeId={recipe.id} initialSaved={isSaved} />
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/protected">
+                <FlaskConical className="size-4" />
+                Manage pantry
+              </Link>
+            </Button>
+          </>
+        ) : (
+          <>
+            <AuthNudge message="Sign in to save recipes for later." isLoggedIn={false}>
+              <Button variant="default" className="gap-2">
+                <FlaskConical className="size-4" />
+                Save recipe
+              </Button>
+            </AuthNudge>
+            <AuthNudge message="Sign in to check which ingredients you already have." isLoggedIn={false}>
+              <Button variant="outline" className="gap-2">
+                <FlaskConical className="size-4" />
+                Check what I have
+              </Button>
+            </AuthNudge>
+          </>
+        )}
       </div>
 
       {/* Ingredients */}
@@ -90,25 +130,11 @@ export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
         </h2>
         <ul className="space-y-2">
           {recipe.ingredients.map((ing) => (
-            <li
+            <IngredientRow
               key={ing.id ?? ing.ingredient_name}
-              className="flex items-baseline gap-2 py-1.5 border-b border-border/50 last:border-0"
-            >
-              <span className="text-sm font-medium text-foreground capitalize flex-1">
-                {ing.ingredient_name}
-              </span>
-              {(ing.quantity != null || ing.unit) && (
-                <span className="text-sm text-muted-foreground shrink-0">
-                  {ing.quantity != null ? ing.quantity : ""}
-                  {ing.unit ? ` ${ing.unit}` : ""}
-                </span>
-              )}
-              {ing.is_optional && (
-                <Badge variant="secondary" className="text-xs shrink-0">
-                  optional
-                </Badge>
-              )}
-            </li>
+              ingredient={ing}
+              matchedNames={matchedNames}
+            />
           ))}
         </ul>
       </section>
@@ -128,7 +154,7 @@ export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
                 <span
                   className={cn(
                     "shrink-0 size-7 rounded-full flex items-center justify-center text-sm font-bold",
-                    "bg-primary text-primary-foreground"
+                    "bg-primary text-primary-foreground",
                   )}
                 >
                   {i + 1}
@@ -140,6 +166,48 @@ export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
         </section>
       )}
     </article>
+  )
+}
+
+function IngredientRow({
+  ingredient,
+  matchedNames,
+}: {
+  ingredient: RecipeIngredient
+  matchedNames: Set<string> | null
+}) {
+  const isRequired = !ingredient.is_optional
+  const isMatched =
+    isRequired && matchedNames !== null
+      ? matchedNames.has(ingredient.ingredient_name.trim().toLowerCase())
+      : null
+
+  return (
+    <li className="flex items-baseline gap-2 py-1.5 border-b border-border/50 last:border-0">
+      {isMatched !== null && (
+        <span className="shrink-0 mt-0.5 self-start">
+          {isMatched ? (
+            <CheckCircle2 className="size-4 text-green-600 dark:text-green-400" />
+          ) : (
+            <XCircle className="size-4 text-red-500 dark:text-red-400" />
+          )}
+        </span>
+      )}
+      <span className="text-sm font-medium text-foreground capitalize flex-1">
+        {ingredient.ingredient_name}
+      </span>
+      {(ingredient.quantity != null || ingredient.unit) && (
+        <span className="text-sm text-muted-foreground shrink-0">
+          {ingredient.quantity != null ? ingredient.quantity : ""}
+          {ingredient.unit ? ` ${ingredient.unit}` : ""}
+        </span>
+      )}
+      {ingredient.is_optional && (
+        <Badge variant="secondary" className="text-xs shrink-0">
+          optional
+        </Badge>
+      )}
+    </li>
   )
 }
 
@@ -162,7 +230,6 @@ function MetaItem({
 
 function parseInstructions(raw: string | null): string[] {
   if (!raw) return []
-  // Split on newlines or numbered patterns like "1." / "1)" and filter empties
   const lines = raw
     .split(/\n|(?=\d+[.)]\s)/)
     .map((s) => s.replace(/^\d+[.)]\s*/, "").trim())
