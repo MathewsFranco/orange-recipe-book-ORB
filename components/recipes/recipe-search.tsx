@@ -9,7 +9,11 @@ import type { RecipeSearchResult, SearchSuggestion } from "@/lib/types"
 
 const MIN_QUERY_LENGTH = 2
 
-export function RecipeSearch() {
+interface RecipeSearchProps {
+  isLoggedIn: boolean
+}
+
+export function RecipeSearch({ isLoggedIn }: RecipeSearchProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -168,7 +172,7 @@ export function RecipeSearch() {
       )}
 
       {!isPending && results.length > 0 && (
-        <RecipeGrid recipes={results} />
+        <RecipeGrid recipes={results} isLoggedIn={isLoggedIn} />
       )}
     </div>
   )
