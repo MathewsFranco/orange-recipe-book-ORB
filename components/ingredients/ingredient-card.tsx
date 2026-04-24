@@ -33,7 +33,7 @@ const UNITS: IngredientUnit[] = [
 
 function formatExpiry(iso: string | null): string | null {
   if (!iso) return null
-  const [y, m, day] = iso.split("-").map(Number)
+  const [y, m, day] = iso.slice(0, 10).split("-").map(Number)
   const d = new Date(y, m - 1, day)
   const now = new Date()
   now.setHours(0, 0, 0, 0)
@@ -53,6 +53,7 @@ export function IngredientCard({ item }: Props) {
   const [name, setName] = useState(item.name)
   const [quantity, setQuantity] = useState(String(item.quantity))
   const [unit, setUnit] = useState<IngredientUnit>(item.unit)
+  const [expiresAt, setExpiresAt] = useState(item.expires_at?.slice(0, 10) ?? "")
   const [error, setError] = useState("")
 
   const { mutate: update, isPending: saving } = useUpdateIngredient()
@@ -62,6 +63,7 @@ export function IngredientCard({ item }: Props) {
     setName(item.name)
     setQuantity(String(item.quantity))
     setUnit(item.unit)
+    setExpiresAt(item.expires_at?.slice(0, 10) ?? "")
     setError("")
     setEditing(true)
   }
@@ -77,7 +79,7 @@ export function IngredientCard({ item }: Props) {
     if (!trimmedName) { setError("Name required"); return }
     if (isNaN(qty) || qty <= 0) { setError("Quantity must be > 0"); return }
     update(
-      { id: item.id, input: { name: trimmedName, quantity: qty, unit } },
+      { id: item.id, input: { name: trimmedName, quantity: qty, unit, expires_at: expiresAt || null } },
       { onSuccess: () => setEditing(false), onError: (e) => setError(e.message) },
     )
   }
@@ -116,6 +118,12 @@ export function IngredientCard({ item }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <Input
+          className="h-7 w-32 text-sm"
+          type="date"
+          value={expiresAt}
+          onChange={(e) => setExpiresAt(e.target.value)}
+        />
         {error && <p className="text-destructive text-xs">{error}</p>}
         <Button size="icon-sm" variant="ghost" onClick={saveEdit} disabled={saving}>
           <CheckIcon />

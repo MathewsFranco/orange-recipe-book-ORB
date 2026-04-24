@@ -31,7 +31,7 @@ export function MobileNav() {
         </SheetHeader>
         <nav className="flex flex-col gap-4 mt-8">
           <Link
-            href="/ingredients"
+            href="/protected/ingredients"
             className="text-lg font-medium hover:text-primary transition-colors"
             onClick={() => setOpen(false)}
           >
