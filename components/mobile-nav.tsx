@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,8 +10,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { NavLinks } from "@/components/nav-links"
 
-export function MobileNav() {
+interface MobileNavProps {
+  isLoggedIn: boolean
+}
+
+export function MobileNav({ isLoggedIn }: MobileNavProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -30,20 +34,11 @@ export function MobileNav() {
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-4 mt-8">
-          <Link
-            href="/protected/ingredients"
-            className="text-lg font-medium hover:text-primary transition-colors"
+          <NavLinks
+            isLoggedIn={isLoggedIn}
+            className="text-lg font-medium hover:text-primary transition-colors text-left"
             onClick={() => setOpen(false)}
-          >
-            My Ingredients
-          </Link>
-          <Link
-            href="/saved"
-            className="text-lg font-medium hover:text-primary transition-colors"
-            onClick={() => setOpen(false)}
-          >
-            Saved
-          </Link>
+          />
         </nav>
       </SheetContent>
     </Sheet>

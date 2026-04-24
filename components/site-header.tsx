@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { MobileNav } from "@/components/mobile-nav"
 import { UserAvatarDropdown } from "@/components/user-avatar-dropdown"
+import { NavLinks } from "@/components/nav-links"
 import { Button } from "@/components/ui/button"
 import { hasEnvVars } from "@/lib/utils"
 
@@ -13,6 +14,8 @@ export async function SiteHeader() {
     const { data } = await supabase.auth.getClaims()
     user = data?.claims
   }
+
+  const isLoggedIn = !!user?.email
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-b-foreground/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,24 +28,19 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link href="/protected/ingredients" className="hover:text-primary transition-colors">
-            My Ingredients
-          </Link>
-          <Link href="/saved" className="hover:text-primary transition-colors">
-            Saved
-          </Link>
+          <NavLinks isLoggedIn={isLoggedIn} className="hover:text-primary transition-colors" />
         </nav>
 
         <div className="flex items-center gap-2">
           <ThemeSwitcher />
-          {user?.email ? (
+          {isLoggedIn && user?.email ? (
             <UserAvatarDropdown email={user.email} />
           ) : (
             <Button asChild size="sm" variant="outline">
               <Link href="/auth/login">Log in</Link>
             </Button>
           )}
-          <MobileNav />
+          <MobileNav isLoggedIn={isLoggedIn} />
         </div>
       </div>
     </header>

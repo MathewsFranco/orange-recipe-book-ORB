@@ -4,7 +4,7 @@ import Link from "next/link"
 import { AuthNudge } from "@/components/auth-nudge"
 
 const NAV_ITEMS = [
-  { href: "/ingredients", label: "My Ingredients", message: "Sign in to track your pantry ingredients." },
+  { href: "/protected/ingredients", label: "My Ingredients", message: "Sign in to track your pantry ingredients." },
   { href: "/saved", label: "Saved", message: "Sign in to save recipes for later." },
 ]
 
