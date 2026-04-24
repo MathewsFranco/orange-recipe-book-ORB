@@ -2,13 +2,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { Clock, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AuthNudge } from "@/components/auth-nudge"
 import type { RecipeSearchResult } from "@/lib/types"
 
 interface RecipeCardProps {
   recipe: RecipeSearchResult
+  isLoggedIn: boolean
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, isLoggedIn }: RecipeCardProps) {
   return (
     <div className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <Link href={`/recipes/${recipe.id}`} className="flex flex-col flex-1">
@@ -48,16 +50,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       </Link>
 
       <div className="px-4 pb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-1.5"
-          disabled
-          aria-label="Save recipe"
-        >
-          <Bookmark className="size-3.5" />
-          Save
-        </Button>
+        <AuthNudge message="Sign in to save recipes for later." isLoggedIn={isLoggedIn}>
+          <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="Save recipe">
+            <Bookmark className="size-3.5" />
+            Save
+          </Button>
+        </AuthNudge>
       </div>
     </div>
   )

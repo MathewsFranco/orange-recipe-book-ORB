@@ -2,14 +2,16 @@ import Image from "next/image"
 import { Clock, ChefHat, Users, Timer, Bookmark, FlaskConical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { AuthNudge } from "@/components/auth-nudge"
 import { cn } from "@/lib/utils"
 import type { RecipeDetail } from "@/lib/types"
 
 interface RecipeDetailProps {
   recipe: RecipeDetail
+  isLoggedIn: boolean
 }
 
-export function RecipeDetailView({ recipe }: RecipeDetailProps) {
+export function RecipeDetailView({ recipe, isLoggedIn }: RecipeDetailProps) {
   const instructions = parseInstructions(recipe.instructions)
 
   return (
@@ -64,14 +66,18 @@ export function RecipeDetailView({ recipe }: RecipeDetailProps) {
 
       {/* Action buttons */}
       <div className="flex gap-3">
-        <Button variant="default" className="gap-2" disabled>
-          <Bookmark className="size-4" />
-          Save recipe
-        </Button>
-        <Button variant="outline" className="gap-2" disabled>
-          <FlaskConical className="size-4" />
-          Check what I have
-        </Button>
+        <AuthNudge message="Sign in to save recipes for later." isLoggedIn={isLoggedIn}>
+          <Button variant="default" className="gap-2">
+            <Bookmark className="size-4" />
+            Save recipe
+          </Button>
+        </AuthNudge>
+        <AuthNudge message="Sign in to check which ingredients you already have." isLoggedIn={isLoggedIn}>
+          <Button variant="outline" className="gap-2">
+            <FlaskConical className="size-4" />
+            Check what I have
+          </Button>
+        </AuthNudge>
       </div>
 
       {/* Ingredients */}
