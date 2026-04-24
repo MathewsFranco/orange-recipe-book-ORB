@@ -25,7 +25,7 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link href="/ingredients" className="hover:text-primary transition-colors">
+          <Link href="/protected/ingredients" className="hover:text-primary transition-colors">
             My Ingredients
           </Link>
           <Link href="/saved" className="hover:text-primary transition-colors">
