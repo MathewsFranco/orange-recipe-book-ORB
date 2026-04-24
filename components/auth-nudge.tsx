@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { cloneElement, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
@@ -8,27 +8,34 @@ import { Button } from "@/components/ui/button"
 interface AuthNudgeProps {
   message: string
   isLoggedIn: boolean
-  children: React.ReactElement<{ onClick?: React.MouseEventHandler }>
+  children: React.ReactElement<{ onClick?: React.MouseEventHandler; disabled?: boolean }>
 }
 
 export function AuthNudge({ message, isLoggedIn, children }: AuthNudgeProps) {
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (isLoggedIn) return children
 
   const handleSignIn = async () => {
+    setError(null)
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/confirm` },
     })
+    if (error) setError("Something went wrong. Please try again.")
   }
+
+  // Strip disabled so the popover trigger can receive click events
+  const trigger = cloneElement(children, { disabled: false })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-64 space-y-3" align="start">
         <p className="text-sm text-muted-foreground">{message}</p>
+        {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex flex-col gap-2">
           <Button size="sm" onClick={handleSignIn} className="w-full">
             Continue with Google
