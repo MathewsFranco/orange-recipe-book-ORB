@@ -59,6 +59,16 @@ export interface RecipeSearchResult {
   cooking_time: number | null
 }
 
+export interface RecipeSearchResultWithMatch extends RecipeSearchResult {
+  match_percentage?: number
+}
+
+export interface MatchResult {
+  match_percentage: number
+  matched: RecipeIngredient[]
+  missing: RecipeIngredient[]
+}
+
 export interface SearchSuggestion {
   type: "recipe" | "ingredient"
   label: string

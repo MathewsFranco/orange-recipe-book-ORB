@@ -82,4 +82,36 @@ describe('matchRecipe', () => {
     })
     expect(result.match_percentage).toBe(100)
   })
+
+  it('single-char typo: "chicken breas" matches "chicken breast"', () => {
+    const result = matchRecipe({
+      pantry: [pantryItem('chicken breas')],
+      recipe: { ingredients: [ing('chicken breast')] },
+    })
+    expect(result.match_percentage).toBe(100)
+  })
+
+  it('partial name: "chicken" matches "chicken breast"', () => {
+    const result = matchRecipe({
+      pantry: [pantryItem('chicken')],
+      recipe: { ingredients: [ing('chicken breast')] },
+    })
+    expect(result.match_percentage).toBe(100)
+  })
+
+  it('reversed partial: "black pepper" matches "ground black pepper"', () => {
+    const result = matchRecipe({
+      pantry: [pantryItem('black pepper')],
+      recipe: { ingredients: [ing('ground black pepper')] },
+    })
+    expect(result.match_percentage).toBe(100)
+  })
+
+  it('false positive guard: "fresh garlic" does NOT match "garlic powder"', () => {
+    const result = matchRecipe({
+      pantry: [pantryItem('fresh garlic')],
+      recipe: { ingredients: [ing('garlic powder')] },
+    })
+    expect(result.match_percentage).toBe(0)
+  })
 })

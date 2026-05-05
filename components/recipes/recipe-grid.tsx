@@ -1,8 +1,8 @@
 import { RecipeCard } from "./recipe-card"
-import type { RecipeSearchResult } from "@/lib/types"
+import type { RecipeSearchResultWithMatch } from "@/lib/types"
 
 interface RecipeGridProps {
-  recipes: RecipeSearchResult[]
+  recipes: RecipeSearchResultWithMatch[]
   isLoggedIn: boolean
 }
 

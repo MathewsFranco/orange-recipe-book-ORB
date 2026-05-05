@@ -5,7 +5,7 @@ import { Search, UtensilsCrossed, Leaf } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { RecipeGrid } from "./recipe-grid"
 import { searchRecipes, getSuggestions } from "@/lib/actions/recipes"
-import type { RecipeSearchResult, SearchSuggestion } from "@/lib/types"
+import type { RecipeSearchResultWithMatch, SearchSuggestion } from "@/lib/types"
 
 const MIN_QUERY_LENGTH = 2
 
@@ -18,7 +18,7 @@ export function RecipeSearch({ isLoggedIn }: RecipeSearchProps) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [activeIndex, setActiveIndex] = useState(-1)
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [results, setResults] = useState<RecipeSearchResult[]>([])
+  const [results, setResults] = useState<RecipeSearchResultWithMatch[]>([])
   const [hasSearched, setHasSearched] = useState(false)
   const [isPending, startTransition] = useTransition()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)

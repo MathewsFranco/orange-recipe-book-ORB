@@ -3,11 +3,18 @@ import Image from "next/image"
 import { Clock, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AuthNudge } from "@/components/auth-nudge"
-import type { RecipeSearchResult } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import type { RecipeSearchResultWithMatch } from "@/lib/types"
 
 interface RecipeCardProps {
-  recipe: RecipeSearchResult
+  recipe: RecipeSearchResultWithMatch
   isLoggedIn: boolean
+}
+
+function matchBadgeClass(pct: number) {
+  if (pct >= 80) return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+  if (pct >= 40) return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+  return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
 }
 
 export function RecipeCard({ recipe, isLoggedIn }: RecipeCardProps) {
@@ -27,6 +34,17 @@ export function RecipeCard({ recipe, isLoggedIn }: RecipeCardProps) {
             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-4xl select-none">
               🍽️
             </div>
+          )}
+
+          {recipe.match_percentage !== undefined && (
+            <span
+              className={cn(
+                "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full",
+                matchBadgeClass(recipe.match_percentage),
+              )}
+            >
+              {recipe.match_percentage}%
+            </span>
           )}
         </div>
 
