@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Clock, ChefHat, Users, Timer, FlaskConical, CheckCircle2, XCircle } from "lucide-react"
+import { Clock, ChefHat, Users, Timer, Bookmark, FlaskConical, CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AuthNudge } from "@/components/auth-nudge"
@@ -106,7 +106,7 @@ export function RecipeDetailView({ recipe, isLoggedIn, matchResult, isSaved = fa
           <>
             <AuthNudge message="Sign in to save recipes for later." isLoggedIn={false}>
               <Button variant="default" className="gap-2">
-                <FlaskConical className="size-4" />
+                <Bookmark className="size-4" />
                 Save recipe
               </Button>
             </AuthNudge>

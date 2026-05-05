@@ -21,11 +21,15 @@ export async function toggleSavedRecipe(recipeId: string): Promise<boolean> {
     .maybeSingle()
 
   if (existing) {
-    await supabase.from("saved_recipes").delete().eq("id", existing.id)
+    const { error } = await supabase.from("saved_recipes").delete().eq("id", existing.id)
+    if (error) throw new Error(`Failed to unsave recipe: ${error.message}`)
     return false
   }
 
-  await supabase.from("saved_recipes").insert({ user_id: userId, recipe_id: recipeId })
+  const { error } = await supabase
+    .from("saved_recipes")
+    .insert({ user_id: userId, recipe_id: recipeId })
+  if (error) throw new Error(`Failed to save recipe: ${error.message}`)
   return true
 }
 
